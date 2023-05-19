@@ -223,6 +223,7 @@ func (b *CPUBurst) start() {
 		klog.V(5).Infof("get pod %v/%v cpu burst config: %v", podMeta.Pod.Namespace, podMeta.Pod.Name, cpuBurstCfg)
 		// set cpu.cfs_burst_us for pod and containers
 		b.applyCPUBurst(cpuBurstCfg, podMeta)
+		// huaiyou, User Space mode cfs quota burst
 		// scale cpu.cfs_quota_us for pod and containers
 		b.applyCFSQuotaBurst(cpuBurstCfg, podMeta, nodeState)
 	}

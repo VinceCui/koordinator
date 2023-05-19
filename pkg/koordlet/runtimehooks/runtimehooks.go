@@ -104,6 +104,7 @@ func NewRuntimeHook(si statesinformer.StatesInformer, cfg *Config) (RuntimeHook,
 		executor:       e,
 	}
 	registerPlugins(newPluginOptions)
+	// huaiyou, 监听可能会影响Plugin行为的资源变化，一旦资源发生变化，更新Plugin的策略（Rule）
 	si.RegisterCallbacks(statesinformer.RegisterTypeNodeSLOSpec, "runtime-hooks-rule-node-slo",
 		"Update hooks rule can run callbacks if NodeSLO spec update",
 		rule.UpdateRules)

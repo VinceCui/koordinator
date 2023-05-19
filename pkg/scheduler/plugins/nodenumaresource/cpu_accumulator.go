@@ -72,6 +72,8 @@ func takeCPUs(
 		// According to the NUMA allocation strategy,
 		// select the NUMA Node with the most remaining amount or the least amount remaining
 		// and the total amount of available CPUs in the NUMA Node is greater than or equal to the number of CPUs needed
+		// 优先查找同节点上的CPU组
+		// 过滤出全空的物理核；优先查找未被独占的NUMA上的CPU，然后找被标记独占的NUMA上的CPU
 		filterExclusiveArgs := []bool{true, false}
 		if acc.numCPUsNeeded <= acc.topology.CPUsPerNode() {
 			for _, filterExclusive := range filterExclusiveArgs {
@@ -88,6 +90,8 @@ func takeCPUs(
 		// According to the NUMA allocation strategy,
 		// select the NUMA Socket with the most remaining amount or the least amount remaining
 		// and the total amount of available CPUs in the NUMA Socket is greater than or equal to the number of CPUs needed
+		// 然后查找同Socket上的CPU组
+		// 过滤出全空的物理核
 		if acc.numCPUsNeeded <= acc.topology.CPUsPerSocket() {
 			freeCPUs := acc.freeCoresInSocket(true)
 			for _, cpus := range freeCPUs {

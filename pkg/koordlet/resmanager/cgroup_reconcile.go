@@ -359,6 +359,7 @@ func (m *CgroupResourcesReconcile) mergePodResourceQoSForMemoryQoS(pod *corev1.P
 	}
 
 	if podCfg == nil {
+		// TODO huaiyou usage?
 		var greyCtlMemoryQOSCfgIf interface{} = &slov1alpha1.PodMemoryQOSConfig{}
 		injected := configextensions.InjectQOSGreyCtrlPlugins(pod, configextensions.QOSPolicyMemoryQOS, &greyCtlMemoryQOSCfgIf)
 		if greyCtlMemoryQOSCfg, ok := greyCtlMemoryQOSCfgIf.(*slov1alpha1.PodMemoryQOSConfig); ok && injected {

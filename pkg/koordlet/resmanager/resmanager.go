@@ -128,6 +128,7 @@ func (r *resmanager) Run(stopCh <-chan struct{}) error {
 
 	_ = r.podsEvicted.Run(stopCh)
 
+	// TODO huaiyou usage?
 	go configextensions.RunQOSGreyCtrlPlugins(r.kubeClient, stopCh)
 
 	if !cache.WaitForCacheSync(stopCh, r.statesInformer.HasSynced) {

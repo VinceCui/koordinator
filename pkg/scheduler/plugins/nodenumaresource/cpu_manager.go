@@ -225,6 +225,7 @@ func (c *cpuManagerImpl) Score(node *corev1.Node, numCPUsNeeded int, cpuBindPoli
 	// TODO(joseph): should support score with preferredCPUs.
 
 	cpuTopology := cpuTopologyOptions.CPUTopology
+	// 先获取可用的CPU列表
 	availableCPUs, allocated := allocation.getAvailableCPUs(cpuTopology, cpuTopologyOptions.MaxRefCount, reservedCPUs, preferredCPUs)
 	acc := newCPUAccumulator(
 		cpuTopology,
@@ -236,24 +237,30 @@ func (c *cpuManagerImpl) Score(node *corev1.Node, numCPUsNeeded int, cpuBindPoli
 		numaAllocateStrategy,
 	)
 
+	// Sockets
+	// |__NUMA Nodes
+	//   |__Cores
+	//     |__SMTs
+
 	var freeCPUs [][]int
-	if cpuBindPolicy == schedulingconfig.CPUBindPolicyFullPCPUs {
-		if numCPUsNeeded <= cpuTopology.CPUsPerNode() {
+	if cpuBindPolicy == schedulingconfig.CPUBindPolicyFullPCPUs { // 同物理核优先策略，找出逻辑核心Core即可
+		if numCPUsNeeded <= cpuTopology.CPUsPerNode() { //优先同NUMA节点（Node）
 			freeCPUs = acc.freeCoresInNode(true, true)
-		} else if numCPUsNeeded <= cpuTopology.CPUsPerSocket() {
+		} else if numCPUsNeeded <= cpuTopology.CPUsPerSocket() { //然后同Socket
 			freeCPUs = acc.freeCoresInSocket(true)
 		}
+		// 什么都不匹配就是不同Socket情况，最差
 	} else {
-		if numCPUsNeeded <= cpuTopology.CPUsPerNode() {
-			freeCPUs = acc.freeCPUsInNode(true)
-		} else if numCPUsNeeded <= cpuTopology.CPUsPerSocket() {
+		if numCPUsNeeded <= cpuTopology.CPUsPerNode() { // 同物理核打散策略等，找出物理核心CPU
+			freeCPUs = acc.freeCPUsInNode(true) //优先同Node
+		} else if numCPUsNeeded <= cpuTopology.CPUsPerSocket() { //然后同Socket
 			freeCPUs = acc.freeCPUsInSocket(true)
 		}
 	}
 
-	scoreFn := mostRequestedScore
+	scoreFn := mostRequestedScore // 优先填满某NUMA节点
 	if numaAllocateStrategy == schedulingconfig.NUMALeastAllocated {
-		scoreFn = leastRequestedScore
+		scoreFn = leastRequestedScore // 优先使用较空闲的NUMA节点
 	}
 
 	var maxScore int64

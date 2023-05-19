@@ -39,6 +39,7 @@ type cpusetRule struct {
 	systemQOSCPUSet string
 }
 
+// TODO huaiyou
 func (r *cpusetRule) getContainerCPUSet(containerReq *protocol.ContainerRequest) (*string, error) {
 	// pod specifies share pool id in annotations, use part cpu share pool
 	// pod specifies QoS=SYSTEM in labels, use system qos resource if rule exist
